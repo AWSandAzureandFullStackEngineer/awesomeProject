@@ -1,0 +1,50 @@
+name: React.js CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.22"
+      - name: Build app
+        run: go build -v ./...
+        working-directory: ./
+      - name: Test backend
+        run: go test -v ./...
+
+  build_image:
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and push backend Docker image
+        working-directory: ./backend
+        run: |
+          docker build . -t ${{ secrets.DOCKER_USERNAME }}/awesome-app:1.0.0
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin 
+          docker push ${{ secrets.DOCKER_USERNAME }}/backend-api:1.0.0    
+
+  k8s-manifest-scan:
+    needs: build_image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Snyk to check Kubernetes manifest file for issues
+        uses: snyk/actions/iac@master
+        with:
+          file: kubernetes/
+          args: --severity-threshold=high
