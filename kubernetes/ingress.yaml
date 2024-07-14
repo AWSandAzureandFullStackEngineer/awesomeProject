@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: engineerscentralhub.tech
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/hello"
+            backend:
+              service:
+                name: awesome-app
+                port:
+                  number: 8080

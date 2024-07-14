@@ -23,7 +23,7 @@ func TestHandler(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected := "New Hello 3!"
+	expected := "Fix New Hello 3!"
 	body, err := ioutil.ReadAll(rr.Body)
 	if err != nil {
 		t.Fatal(err)
