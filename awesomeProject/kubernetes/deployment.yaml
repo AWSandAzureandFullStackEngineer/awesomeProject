@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: awesome-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: awesome-app
+  template:
+    metadata:
+      labels:
+        app: awesome-app
+    spec:
+      containers:
+        - name: awesome-app
+          image: steven8519/awesome-app:1.0.0
+          ports:
+            - containerPort: 8080
