@@ -39,13 +39,45 @@ jobs:
           
   
 
-  k8s-manifest-scan:
-    needs: build_image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Snyk to check Kubernetes manifest file for issues
-        uses: snyk/actions/iac@master
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
         with:
-          file: kubernetes/
-          args: --severity-threshold=high
+          image-ref: 'docker.io/${{ secrets.DOCKER_USERNAME }}/awesome-app:1.0.0'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Install Snyk CLI
+        uses: snyk/actions/setup@master
+        with:
+          snyk-token: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk Authenticate
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk Container monitor
+        run: snyk container monitor ${{ secrets.DOCKER_USERNAME }}/awesome-app:1.0.0 --file=Dockerfile
+        working-directory: ./
+
+      - name: Run Snyk to check for vulnerabilities in the Docker image
+        uses: snyk/actions/docker@master
+        with:
+          image: ${{ secrets.DOCKER_USERNAME }}/awesome-app:1.0.0
+          args: --file=awesomeProject/Dockerfile --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+
+        k8s-manifest-scan:
+          needs: build_image
+          runs-on: ubuntu-latest
+          steps:
+            - uses: actions/checkout@v4
+            - name: Run Snyk to check Kubernetes manifest file for issues
+              uses: snyk/actions/iac@master
+              env:
+                SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+              with:
+                file: kubernetes/
+                args: --severity-threshold=high
