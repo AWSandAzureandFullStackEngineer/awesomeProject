@@ -10,7 +10,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: engineerscentralhub.tech
+    - host: www.app.engineerscentralhub.tech
       http:
         paths:
           - pathType: Prefix
