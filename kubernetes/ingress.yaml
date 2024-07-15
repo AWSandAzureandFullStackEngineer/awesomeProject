@@ -4,13 +4,10 @@ metadata:
   name: my-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
 spec:
   ingressClassName: nginx
   rules:
-    - host: www.app.engineerscentralhub.tech
+    - host: engineerscentralhub.tech
       http:
         paths:
           - pathType: Prefix
